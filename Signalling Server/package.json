@@ -1,0 +1,15 @@
+{
+  "name": "signalling-server",
+  "version": "1.0.0",
+  "description": "Signalling server for establishing webRTC connection through socket-io",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.3"
+  }
+}
