@@ -20,17 +20,14 @@ io.on("connection", (socket) => {
         console.log(`${socket.id} joined ${roomId}`);
     });
 
-    // 1. RELAY OFFER (Keep this exactly like this for Android's parser)
     socket.on("offer", (payload) => {
         socket.to(payload.roomId).emit("offer", payload.offer);
     });
 
-    // 2. RELAY ANSWER (Forward the whole payload, because Android sends a flat object)
     socket.on("answer", (payload) => {
         socket.to(payload.roomId).emit("answer", payload);
     });
 
-    // 3. RELAY ICE CANDIDATES (Forward the whole payload so no coordinates get lost)
     socket.on("ice-candidate", (payload) => {
         socket.to(payload.roomId).emit("ice-candidate", payload);
     });
