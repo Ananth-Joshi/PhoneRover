@@ -3,12 +3,21 @@ package com.example.controller
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import io.github.controlwear.virtual.joystick.android.JoystickView
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
+import org.maplibre.android.MapLibre
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
 import org.webrtc.IceCandidate
 import org.webrtc.SurfaceViewRenderer
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.camera.CameraUpdateFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,18 +26,56 @@ class MainActivity : AppCompatActivity() {
     private lateinit var socket: Socket
     private lateinit var webRTCManager: WebRTCManager
     private lateinit var joystick : JoystickView
+    private lateinit var mapView : MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //Hide the navigation and status bars
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        }
+
+
+        MapLibre.getInstance(this)  //This has to be called before setContentView
         setContentView(R.layout.activity_main)
 
         joystick = findViewById(R.id.joystick)
-
         connectionBtn = findViewById(R.id.btnConnect)
         remoteView = findViewById(R.id.remote_view)
-
-
         webRTCManager = WebRTCManager(this)
+        mapView = findViewById<MapView>(R.id.mapView)
+
+
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync { map ->
+
+            // Hide default MapLibre UI elements
+            map.uiSettings.apply {
+                isLogoEnabled = false
+                isAttributionEnabled = false
+                isCompassEnabled = false
+            }
+
+            // Load the completely free vector style from OpenFreeMap
+            map.setStyle("https://tiles.openfreemap.org/styles/liberty") { style ->
+
+                // Your starting location
+                val startLocation = LatLng(12.9141, 74.8560)
+
+                val position = CameraPosition.Builder()
+                    .target(startLocation)
+                    .zoom(18.5)
+                    .tilt(0.0)
+                    .bearing(0.0)
+                    .build()
+
+                // Move the camera once the style has successfully loaded
+                map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+            }
+        }
 
         remoteView.init(webRTCManager.eglBase.eglBaseContext, null)
         remoteView.setMirror(false)

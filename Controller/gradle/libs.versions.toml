@@ -10,6 +10,7 @@ activityKtx = "1.8.0"
 constraintlayout = "2.1.4"
 webrtc = "1.1.1"
 joystick = "master"
+maplibre = "11.13.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -22,6 +23,7 @@ androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", ve
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 webrtc = { group = "io.getstream", name = "stream-webrtc-android", version.ref = "webrtc" }
 virtual-joystick = { group = "com.github.controlwear", name = "virtual-joystick-android", version.ref = "joystick" }
+maplibre-android = { group = "org.maplibre.gl", name = "android-sdk", version.ref = "maplibre" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

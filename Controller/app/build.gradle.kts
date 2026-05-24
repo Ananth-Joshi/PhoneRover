@@ -57,6 +57,7 @@ dependencies {
     }
     implementation(libs.virtual.joystick)
     implementation(libs.webrtc)
+    implementation(libs.maplibre.android)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

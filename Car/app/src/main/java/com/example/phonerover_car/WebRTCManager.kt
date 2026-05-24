@@ -79,7 +79,27 @@ class WebRTCManager (context: Context){
 
             override fun onRemoveStream(p0: MediaStream?) {}
 
-            override fun onDataChannel(p0: DataChannel?) {}
+            override fun onDataChannel(incomingChannel: DataChannel?) {
+                println("APP LOG: Steering DataChannel caught from Controller!")
+                dataChannel = incomingChannel
+
+                dataChannel?.registerObserver(object : DataChannel.Observer {
+                    override fun onBufferedAmountChange(p0: Long) {}
+                    override fun onStateChange() {
+                        println("APP LOG: DataChannel state changed to: ${dataChannel?.state()}")
+                    }
+
+                    override fun onMessage(buffer: DataChannel.Buffer) {
+                        val data = buffer.data
+                        val bytes = ByteArray(data.remaining())
+                        data.get(bytes)
+                        val commandJSON = String(bytes, Charsets.UTF_8)
+
+                        println("APP LOG: 🕹️ INCOMING COMMAND: $commandJSON")
+
+                    }
+                })
+            }
 
             override fun onRenegotiationNeeded() {}
         }

@@ -96,7 +96,7 @@ class WebRTCManager(private val context: Context) {
             maxRetransmits = 0
         }
 
-        dataChannel = peerConnection?.createDataChannel("car-controls",dcInit)
+        dataChannel = peerConnection?.createDataChannel("rover-data-stream",dcInit)
     }
 
     fun createLocalOffer(onOfferReady: (String) -> Unit) {
