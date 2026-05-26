@@ -86,6 +86,7 @@ class WebRTCManager(private val context: Context) {
         }
 
         peerConnection = peerConnectionFactory.createPeerConnection(iceList, observer)
+
         peerConnection?.addTransceiver(
             org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO,
             org.webrtc.RtpTransceiver.RtpTransceiverInit(org.webrtc.RtpTransceiver.RtpTransceiverDirection.RECV_ONLY)
