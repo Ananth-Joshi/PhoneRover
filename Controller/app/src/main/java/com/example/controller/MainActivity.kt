@@ -62,8 +62,26 @@ class MainActivity : AppCompatActivity() {
             // Load the completely free vector style from OpenFreeMap
             map.setStyle("https://tiles.openfreemap.org/styles/liberty") { style ->
 
-                // Your starting location
-                val startLocation = LatLng(12.9141, 74.8560)
+                val startLocation = LatLng(0.0, 0.0, )
+                val carBitmap = android.graphics.BitmapFactory.decodeResource(resources,R.drawable.car)
+
+                style.addImage("rover-icon",carBitmap)
+
+                val initialPoint = org.maplibre.geojson.Point.fromLngLat(0.0,0.0)
+                val geoJsonSource = org.maplibre.android.style.sources.GeoJsonSource(
+                    "rover-source",
+                    org.maplibre.geojson.Feature.fromGeometry(initialPoint)
+                )
+                style.addSource(geoJsonSource)
+
+                val symbolLayer = org.maplibre.android.style.layers.SymbolLayer("rover-layer", "rover-source")
+                    .withProperties(
+                        org.maplibre.android.style.layers.PropertyFactory.iconImage("rover-icon"),
+                        org.maplibre.android.style.layers.PropertyFactory.iconSize(0.5f),
+                        org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap(true),
+                        org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement(true)
+                    )
+                style.addLayer(symbolLayer)
 
                 val position = CameraPosition.Builder()
                     .target(startLocation)

@@ -56,6 +56,7 @@ dependencies {
         exclude(group = "org.json", module = "json")
     }
     implementation(libs.webrtc)
+    implementation(libs.play.services.location)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
