@@ -15,6 +15,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var socket: Socket
     private lateinit var webRTCManager: WebRTCManager
 
+    private lateinit var telemetryEngine: TelemetryEngine
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -22,6 +24,12 @@ class MainActivity : AppCompatActivity() {
         val roomId = "signalling-room"
         socket = IO.socket(BuildConfig.SIGNALING_SERVER_URL)
         socket.connect()
+
+        telemetryEngine = TelemetryEngine(this){
+            telemetryJson ->
+                println("telemetryJSON $telemetryJson")
+                webRTCManager.sendTelemetry(telemetryJson)
+        }
 
         webRTCManager = WebRTCManager(this)
         webRTCManager.createPeerConnection(
@@ -46,12 +54,16 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) {
             println("APP LOG: 🛑 Camera permission missing! Asking user...")
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 100)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION), 100)
         } else {
             println("APP LOG: 📸 Camera permission granted! Starting video track.")
             webRTCManager.startCameraAndAttachTrack(this)
+            telemetryEngine.startTracking()
         }
 
         socket.on(Socket.EVENT_CONNECT){
@@ -100,6 +112,28 @@ class MainActivity : AppCompatActivity() {
                 println("APP LOG: ICE parsing error - ${e.message}")
             }
         }
+    }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 100) {
+            // Verify that the user actually granted all the requested permissions
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                println("APP LOG: 📸 Permissions granted from popup! Starting video track & telemetry.")
+
+                // Now that we have the keys, start the WebRTC stream
+                webRTCManager.startCameraAndAttachTrack(this)
+                telemetryEngine.startTracking()
+                // TODO: Initialize your serial telemetry to the Arduino Nano here
+
+            } else {
+                println("APP LOG: 🛑 User denied permissions. Cannot drive the RC car.")
+            }
+        }
     }
 }

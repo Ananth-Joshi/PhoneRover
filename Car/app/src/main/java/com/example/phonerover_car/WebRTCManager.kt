@@ -14,6 +14,7 @@ import org.webrtc.SessionDescription
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.VideoCapturer
 import org.webrtc.VideoTrack
+import java.nio.ByteBuffer
 
 class WebRTCManager (context: Context){
     private lateinit var peerConnectionFactory: PeerConnectionFactory;
@@ -176,6 +177,13 @@ class WebRTCManager (context: Context){
         peerConnection?.addTrack(localVideoTrack)
 
         println("APP LOG: Camera track successfully attached to the PeerConnection!")
+    }
 
+    fun sendTelemetry(jsonString : String){
+        if(dataChannel?.state()== DataChannel.State.OPEN){
+            val bytes  = jsonString.toByteArray(Charsets.UTF_8)
+            val buffer = ByteBuffer.wrap(bytes)
+            dataChannel?.send(DataChannel.Buffer(buffer,false))
+        }
     }
 }
