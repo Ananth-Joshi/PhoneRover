@@ -1,6 +1,9 @@
 package com.example.phonerover_car
 
 import android.content.Context
+import android.hardware.usb.UsbManager
+import com.hoho.android.usbserial.driver.UsbSerialPort
+import org.json.JSONObject
 import org.webrtc.Camera2Enumerator
 import org.webrtc.DataChannel
 import org.webrtc.EglBase
@@ -16,7 +19,7 @@ import org.webrtc.VideoCapturer
 import org.webrtc.VideoTrack
 import java.nio.ByteBuffer
 
-class WebRTCManager (context: Context){
+class WebRTCManager (private val context: Context){
     private lateinit var peerConnectionFactory: PeerConnectionFactory;
     private var peerConnection: PeerConnection? = null
     val eglBase = org.webrtc.EglBase.create()
@@ -25,6 +28,10 @@ class WebRTCManager (context: Context){
     private var videoCapturer: VideoCapturer? = null
     private var localVideoTrack: VideoTrack? = null
     private var surfaceTextureHelper: SurfaceTextureHelper? = null
+
+    private var arduinoPort : UsbSerialPort? = null
+
+    private var lastSentCommand = 'X'
 
     init{
         var options = PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
@@ -40,6 +47,7 @@ class WebRTCManager (context: Context){
 
     fun createPeerConnection(
         onIceCandidateGenerated: (IceCandidate) -> Unit,
+        onCommandReceived: (Char) -> Unit,
         onWebRTCDisconnected: () -> Unit,
         onWebRTCConnected: () -> Unit
     ){
@@ -95,8 +103,37 @@ class WebRTCManager (context: Context){
                         val bytes = ByteArray(data.remaining())
                         data.get(bytes)
                         val commandJSON = String(bytes, Charsets.UTF_8)
-
                         println("APP LOG: 🕹️ INCOMING COMMAND: $commandJSON")
+
+                        try {
+                            val json = JSONObject(commandJSON)
+                            // Ensure this is a driving command from the controller
+                            if (json.has("action") && json.getString("action") == "drive") {
+                                val speed = json.getDouble("speed")
+                                val angle = json.getDouble("angle")
+
+                                var currentCommand = 'S' // Default to Stop
+
+                                println("angle: $angle")
+
+                                // If strength is greater than 10%, calculate the quadrant
+                                if (speed > 10.0) {
+                                    currentCommand = when {
+                                        angle > 45 && angle <= 135 -> 'F' // Forward
+                                        angle > 135 && angle <= 225 -> 'L' // Left
+                                        angle > 225 && angle <= 315 -> 'B' // Backward
+                                        else -> 'R' // Right (315-360 and 0-45)
+                                    }
+                                }
+
+                                // ONLY send if the direction has actually changed
+                                if (currentCommand != lastSentCommand) {
+                                    onCommandReceived(currentCommand)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            println("APP LOG: 🛑 JSON Parse or USB Write Error - ${e.message}")
+                        }
 
                     }
                 })

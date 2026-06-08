@@ -63,17 +63,6 @@ class TelemetryEngine (context: Context, private val onTelemetryUpdate : (String
                 if (result.lastLocation != null){
                     currentLat = result.lastLocation!!.latitude
                     currentLng = result.lastLocation!!.longitude
-
-                    // --- THE JSON FACTORY ---
-                    val telemetryJson = org.json.JSONObject().apply {
-                        put("type", "telemetry")
-                        put("lat", currentLat)
-                        put("lng", currentLng)
-                        put("heading", currentHeading)
-                    }
-
-                    // --- SHIP IT! ---
-                    onTelemetryUpdate(telemetryJson.toString())
                 }
             }
         }
@@ -83,6 +72,28 @@ class TelemetryEngine (context: Context, private val onTelemetryUpdate : (String
             locationCallback,
             android.os.Looper.getMainLooper()
         )
+
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        val tickerRunnable = object : Runnable {
+            override fun run() {
+                // Optional: Only send data if we have an actual GPS lock (not 0.0)
+                if (currentLat != 0.0 && currentLng != 0.0) {
+                    val telemetryJson = org.json.JSONObject().apply {
+                        put("type", "telemetry")
+                        put("lat", currentLat)
+                        put("lng", currentLng)
+                        put("heading", currentHeading) // The buttery-smooth compass data!
+                    }
+                    onTelemetryUpdate(telemetryJson.toString())
+                }
+
+                // Re-run this exact code block in 100 milliseconds
+                handler.postDelayed(this, 100)
+            }
+        }
+
+        // Start the engine!
+        handler.post(tickerRunnable)
     }
 
 }

@@ -57,6 +57,7 @@ dependencies {
     }
     implementation(libs.webrtc)
     implementation(libs.play.services.location)
+    implementation(libs.usb.serial.android)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

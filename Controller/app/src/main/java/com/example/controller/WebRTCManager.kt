@@ -1,6 +1,7 @@
 package com.example.controller
 
 import android.content.Context
+import org.json.JSONObject
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
@@ -32,7 +33,8 @@ class WebRTCManager(private val context: Context) {
         onIceCandidateGenerated: (IceCandidate) -> Unit,
         onVideoTrackReceived: (org.webrtc.VideoTrack) -> Unit,
         onWebRTCDisconnected: () -> Unit,
-        onWebRTCConnected: () -> Unit
+        onWebRTCConnected: () -> Unit,
+        onTelemetryReceived: (lat: Double, lng: Double, heading: Double) -> Unit
     )  {
         val iceList = listOf(
             PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
@@ -65,7 +67,6 @@ class WebRTCManager(private val context: Context) {
 
                 if (track is org.webrtc.VideoTrack) {
                     println("APP LOG: Video Track Received from Car!")
-
                     onVideoTrackReceived(track)
                 }
             }
@@ -98,6 +99,34 @@ class WebRTCManager(private val context: Context) {
         }
 
         dataChannel = peerConnection?.createDataChannel("rover-data-stream",dcInit)
+        dataChannel?.registerObserver(object: DataChannel.Observer{
+            override fun onBufferedAmountChange(p0: Long) {}
+            override fun onStateChange() {
+                println("APP LOG: Controller DataChannel state changed to: ${dataChannel?.state()}")
+            }
+            override fun onMessage(buffer: DataChannel.Buffer) {
+                val data = buffer.data
+                val bytes = ByteArray(data.remaining())
+                data.get(bytes)
+                val incomingString = String(bytes, Charsets.UTF_8)
+                try {
+                    //Parse the String back into a JSON Object
+                    val json = JSONObject(incomingString)
+
+                    //Route the data based on its "type"
+                    if (json.has("type") && json.getString("type") == "telemetry") {
+                        val lat = json.getDouble("lat")
+                        val lng = json.getDouble("lng")
+                        val heading = json.getDouble("heading")
+
+                        onTelemetryReceived(lat, lng, heading)
+
+                    }
+                } catch (e: Exception) {
+                    println("APP LOG: Failed to parse incoming DataChannel message - ${e.message}")
+                }
+            }
+        })
     }
 
     fun createLocalOffer(onOfferReady: (String) -> Unit) {
@@ -162,4 +191,6 @@ class WebRTCManager(private val context: Context) {
             dataChannel?.send(DataChannel.Buffer(buffer,false))
         }
     }
+
+
 }

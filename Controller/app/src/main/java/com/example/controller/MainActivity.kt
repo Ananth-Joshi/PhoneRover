@@ -135,6 +135,24 @@ class MainActivity : AppCompatActivity() {
                     joystick.isEnabled = true
 //                    joystick.resetButtonPosition()
                 }
+            },
+            onTelemetryReceived = { lat, lng, heading ->
+                runOnUiThread {
+                    mapView.getMapAsync { map ->
+                        map.style?.let { style ->
+                            val source = style.getSourceAs<org.maplibre.android.style.sources.GeoJsonSource>("rover-source")
+                            source?.setGeoJson(org.maplibre.geojson.Point.fromLngLat(lng, lat))
+
+                            val layer = style.getLayerAs<org.maplibre.android.style.layers.SymbolLayer>("rover-layer")
+                            layer?.setProperties(org.maplibre.android.style.layers.PropertyFactory.iconRotate(heading.toFloat()))
+
+                            val position = CameraPosition.Builder()
+                                .target(LatLng(lat, lng))
+                                .build()
+                            map.easeCamera(CameraUpdateFactory.newCameraPosition(position), 500)
+                        }
+                    }
+                }
             }
         )
 

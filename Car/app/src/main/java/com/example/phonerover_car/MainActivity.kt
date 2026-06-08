@@ -14,6 +14,7 @@ import org.webrtc.IceCandidate
 class MainActivity : AppCompatActivity() {
     private lateinit var socket: Socket
     private lateinit var webRTCManager: WebRTCManager
+    private lateinit var usbManager: ArduinoUsbManager
 
     private lateinit var telemetryEngine: TelemetryEngine
 
@@ -21,18 +22,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        usbManager = ArduinoUsbManager(this)
+        usbManager.startListening()
+
         val roomId = "signalling-room"
         socket = IO.socket(BuildConfig.SIGNALING_SERVER_URL)
         socket.connect()
 
         telemetryEngine = TelemetryEngine(this){
             telemetryJson ->
-                println("telemetryJSON $telemetryJson")
+//                println("APP LOG: telemetryJSON $telemetryJson")
                 webRTCManager.sendTelemetry(telemetryJson)
         }
 
         webRTCManager = WebRTCManager(this)
         webRTCManager.createPeerConnection(
+            onCommandReceived = { command ->
+                // 3. The magic link: WebRTC gets a command, tell the USB to send it
+                usbManager.sendCommand(command)
+            },
             onIceCandidateGenerated = { candidate ->
                 val candidateJson = JSONObject()
                 candidateJson.put("candidate", candidate.sdp)
@@ -114,6 +122,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        // Stop listening for USB events to prevent memory leaks when the app closes
+        usbManager.stopListening()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -126,11 +140,8 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 println("APP LOG: 📸 Permissions granted from popup! Starting video track & telemetry.")
 
-                // Now that we have the keys, start the WebRTC stream
                 webRTCManager.startCameraAndAttachTrack(this)
                 telemetryEngine.startTracking()
-                // TODO: Initialize your serial telemetry to the Arduino Nano here
-
             } else {
                 println("APP LOG: 🛑 User denied permissions. Cannot drive the RC car.")
             }
