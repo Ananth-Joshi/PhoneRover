@@ -31,7 +31,8 @@ class WebRTCManager (private val context: Context){
 
     private var arduinoPort : UsbSerialPort? = null
 
-    private var lastSentCommand = 'X'
+    var lastSentAngle = ""
+    var lastSentSpeed = ""
 
     init{
         var options = PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
@@ -47,7 +48,7 @@ class WebRTCManager (private val context: Context){
 
     fun createPeerConnection(
         onIceCandidateGenerated: (IceCandidate) -> Unit,
-        onCommandReceived: (Char) -> Unit,
+        onCommandReceived: (String) -> Unit,
         onWebRTCDisconnected: () -> Unit,
         onWebRTCConnected: () -> Unit
     ){
@@ -107,28 +108,23 @@ class WebRTCManager (private val context: Context){
 
                         try {
                             val json = JSONObject(commandJSON)
-                            // Ensure this is a driving command from the controller
+
                             if (json.has("action") && json.getString("action") == "drive") {
-                                val speed = json.getDouble("speed")
-                                val angle = json.getDouble("angle")
 
-                                var currentCommand = 'S' // Default to Stop
+                                val servoAngle = json.getInt("servoAngle")
+                                val motorPWM = json.getInt("pwm")
 
-                                println("angle: $angle")
+                                val angleCommand = "A${servoAngle}\n"
+                                val speedCommand = "S${motorPWM}\n"
 
-                                // If strength is greater than 10%, calculate the quadrant
-                                if (speed > 10.0) {
-                                    currentCommand = when {
-                                        angle > 45 && angle <= 135 -> 'F' // Forward
-                                        angle > 135 && angle <= 225 -> 'L' // Left
-                                        angle > 225 && angle <= 315 -> 'B' // Backward
-                                        else -> 'R' // Right (315-360 and 0-45)
-                                    }
+                                if (angleCommand != lastSentAngle) {
+                                    onCommandReceived(angleCommand)
+                                    lastSentAngle = angleCommand
                                 }
 
-                                // ONLY send if the direction has actually changed
-                                if (currentCommand != lastSentCommand) {
-                                    onCommandReceived(currentCommand)
+                                if (speedCommand != lastSentSpeed) {
+                                    onCommandReceived(speedCommand)
+                                    lastSentSpeed = speedCommand
                                 }
                             }
                         } catch (e: Exception) {

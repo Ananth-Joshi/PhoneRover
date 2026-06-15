@@ -15,7 +15,7 @@ class ArduinoUsbManager(private val context: Context) {
 
     // The BroadcastReceiver lives safely inside this class
     private val usbReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: String?) {
+        override fun onReceive(context: Context, intent: Intent?) {
             when (intent?.action) {
                 UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
                     println("APP LOG: 🔌 Hardware Alert: USB Device Attached!")
@@ -70,7 +70,7 @@ class ArduinoUsbManager(private val context: Context) {
                     arduinoPort = driver.ports[0]
                     arduinoPort?.open(connection)
                     arduinoPort?.setParameters(
-                        115200,
+                        9600,
                         8,
                         UsbSerialPort.STOPBITS_1,
                         UsbSerialPort.PARITY_NONE
@@ -103,7 +103,7 @@ class ArduinoUsbManager(private val context: Context) {
     }
 
     // Expose a public function to send commands directly to the hardware
-    fun sendCommand(command: Char) {
+    fun sendCommand(command: String) {
         arduinoPort?.let { port ->
             if (port.isOpen) {
                 try {

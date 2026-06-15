@@ -243,9 +243,21 @@ class MainActivity : AppCompatActivity() {
                 println("APP LOG: Offer sent to server!")
             }
         }
-        
-        joystick.setOnMoveListener { angle, strength->
-            val jsonPayload = "{\"action\":\"drive\",\"speed\":$strength,\"angle\":$angle}"
+
+        joystick.setOnMoveListener { angle, strength ->
+            var servoAngle = 90
+            var motorPWM = 0
+            val mappedPWM = (strength * 2.55).toInt()
+
+            if (angle in 0..180) {
+                servoAngle = angle
+                motorPWM = mappedPWM // Positive PWM for forward
+            }
+            else {
+                servoAngle = 360 - angle
+                motorPWM = -mappedPWM // Negative PWM for reverse
+            }
+            val jsonPayload = "{\"action\":\"drive\",\"pwm\":$motorPWM,\"servoAngle\":$servoAngle}"
             webRTCManager.sendDataThroughChannel(jsonPayload)
         }
     }
