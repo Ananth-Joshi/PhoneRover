@@ -49,3 +49,13 @@ The architecture follows a strict **"Smart Brain, Dumb Muscle"** pattern. The An
   [L298N Driver] ---> [DC Motors] (Drive)
 
 ```
+
+## 🌍 4G/LTE Teleoperation (Beyond Line-of-Sight)
+
+PhoneRover is built to drive anywhere. While it works perfectly over local Wi-Fi for testing, the true goal of this project is long-distance teleoperation over a cellular network.
+
+Because cellular providers use strict firewalls and CGNAT, you cannot connect to the car's WebRTC video stream directly over 4G. To punch through these networks and maintain ultra-low latency steering, PhoneRover uses a custom TURN server.
+
+We have included a fully Dockerized, secure Coturn infrastructure setup that you can deploy to a free cloud provider (like Oracle Cloud) in about 5 minutes.
+
+👉 **[Click here for the 4G Cloud Infrastructure Guide](./TURN Server/README.md)**
