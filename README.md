@@ -58,4 +58,4 @@ Because cellular providers use strict firewalls and CGNAT, you cannot connect to
 
 We have included a fully Dockerized, secure Coturn infrastructure setup that you can deploy to a free cloud provider (like Oracle Cloud) in about 5 minutes.
 
-👉 **[Click here for the 4G Cloud Infrastructure Guide](./turn-server/README.md)**
+👉 **[Click here for the 4G Cloud Infrastructure Guide](./TURN%20Server/README.md)**
