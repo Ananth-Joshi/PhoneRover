@@ -53,7 +53,7 @@ class WebRTCManager (private val context: Context){
         onWebRTCConnected: () -> Unit
     ){
         val iceList = listOf(
-            // PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
 
             PeerConnection.IceServer.builder(BuildConfig.TURN_URI) 
                 .setUsername(BuildConfig.TURN_USER)

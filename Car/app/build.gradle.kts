@@ -33,9 +33,9 @@ android {
         }
         val serverUrl = properties.getProperty("SIGNALING_SERVER_URL") ?: "\"\""
         buildConfigField("String", "SIGNALING_SERVER_URL", serverUrl)
-        buildConfigField("String", "TURN_URI", localProperties.getProperty("TURN_SERVER_URI") ?: "\"turn:0.0.0.0:3478\"")
-        buildConfigField("String", "TURN_USER", localProperties.getProperty("TURN_USERNAME") ?: "\"user\"")
-        buildConfigField("String", "TURN_PASS", localProperties.getProperty("TURN_PASSWORD") ?: "\"pass\"")
+        buildConfigField("String", "TURN_URI", properties.getProperty("TURN_SERVER_URI") ?: "\"turn:0.0.0.0:3478\"")
+        buildConfigField("String", "TURN_USER", properties.getProperty("TURN_USERNAME") ?: "\"user\"")
+        buildConfigField("String", "TURN_PASS", properties.getProperty("TURN_PASSWORD") ?: "\"pass\"")
 
     }
 
