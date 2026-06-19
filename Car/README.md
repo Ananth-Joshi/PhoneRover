@@ -92,5 +92,3 @@ The application serializes incoming driving commands and pipes them across the U
 
 * **`angle`:** Integer value defining steering servo position.
 * **`velocity`:** Integer value mapping directly to motor driver PWM cycles.
-
-```
