@@ -39,3 +39,19 @@ Every time the digital joystick moves, the app calculates the precise physical a
 1. Open the project in Android Studio.
 2. Ensure your WebRTC signaling server configuration (IP/Port) is correctly set in the `WebRTCManager` class.
 3. Build and deploy to any Android 8.0+ device acting as the ground station.
+
+## ⚙️ Configuration
+
+Link your cloud servers using the local properties file.
+
+### Setup Instructions
+
+1. Open this `Controller` directory as a standalone project in **Android Studio**.
+2. Create or open the `local.properties` file in the project root directory (`./local.properties`).
+3. Add your server details to the bottom:
+
+```properties
+SIGNALING_SERVER_URL="http://YOUR_SERVER_IP:3000"
+TURN_SERVER_URI="turn:YOUR_SERVER_IP:3478"
+TURN_USERNAME="your_turn_username"
+TURN_PASSWORD="your_secure_password"
