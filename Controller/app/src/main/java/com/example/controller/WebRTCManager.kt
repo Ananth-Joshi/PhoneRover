@@ -37,7 +37,12 @@ class WebRTCManager(private val context: Context) {
         onTelemetryReceived: (lat: Double, lng: Double, heading: Double) -> Unit
     )  {
         val iceList = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
+
+            PeerConnection.IceServer.builder("turn:TURN_SERVER_IP:TURN_SERVER_PORT") 
+                .setUsername("TURN_USERNAME")
+                .setPassword("TURN_PASSWORD")
+                .createIceServer()
         )
 
         val observer = object : PeerConnection.Observer {

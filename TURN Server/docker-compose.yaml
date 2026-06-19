@@ -1,0 +1,17 @@
+services:
+  coturn:
+    image: coturn/coturn:latest
+    container_name: phonerover_turn
+    restart: unless-stopped
+    network_mode: "host"
+    command:
+      - --log-file=stdout
+      - --simple-log
+      - --listening-port=3478
+      - --min-port=50000
+      - --max-port=50010
+      - --realm=phonerover.local
+      - --lt-cred-mech
+      - --user=${TURN_USERNAME}:${TURN_PASSWORD}
+      - --external-ip=${PUBLIC_IP}/${PRIVATE_IP}
+      - --no-multicast-peers
